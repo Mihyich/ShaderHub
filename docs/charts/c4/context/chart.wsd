@@ -1,0 +1,96 @@
+@startuml C4_Context
+
+skinparam sequenceMessageAlign center
+
+skinparam activity {
+    BackgroundColor White
+    BorderColor Black
+    BorderThickness 2
+    FontName "Arial"
+    FontSize 12
+}
+
+skinparam title {
+    FontSize 18
+}
+
+skinparam rectangle {
+    BackgroundColor<<Person>> MediumAquaMarine
+    BorderColor<<Person>> ForestGreen
+
+    BackgroundColor<<System>> LightBlue
+    BorderColor<<System>> DarkBlue
+
+    BackgroundColor<<External>> Coral
+    BorderColor<<External>> Chocolate
+    
+    BorderThickness 2
+}
+
+title Контекстная диаграмма C4
+
+' ============================================
+' Элементы диаграммы
+' ============================================
+
+' Акторы
+rectangle "Гость" <<Person>> as Guest
+rectangle "Разработчик" <<Person>> as Developer
+rectangle "Администратор" <<Person>> as Admin
+
+' ============================================
+' Основная система
+' ============================================
+rectangle "ShaderHub\nПлатформа для хранения, разработки,\nпросмотра и обмена шейдерами" <<System>> as ShaderHub
+
+' ============================================
+' Внешние системы
+' ============================================
+rectangle "SMTP / Почтовый сервер" <<External>> as SMTP
+rectangle "OAuth Provider\n(Google/GitHub/Telegram)" <<External>> as OAuth
+rectangle "CDN / Cloud Storage" <<External>> as CDN
+
+' ============================================
+' Связи
+' ============================================
+
+' --- Гость ---
+Guest --> ShaderHub : "Просмотр, Поиск,\nПредпросмотр шейдеров"
+
+' --- Разработчик (наследуется от Гостя + дополняется) ---
+Developer --> ShaderHub : "Вход, Регистрация,\nСохранение, Загрузка ассетов,\nКомментарии, Оценка"
+
+' --- Администратор ---
+Admin --> ShaderHub : "Модерация,\nБлокировка пользователей,\nУправление контентом"
+
+' --- Внешние интеграции ---
+ShaderHub --> SMTP : "Отправка писем\n(подтверждение, восстановление)"
+ShaderHub --> OAuth : "Аутентификация\n(OAuth2)"
+ShaderHub --> CDN : "Хранение и раздача\nассетов и превью"
+
+' ' Основная система
+' rectangle "ShaderHub" <<System>> as ShaderHub {
+' }
+
+' ' Внешние системы
+' rectangle "🔗 GitHub/GitLab" <<External>> as Git
+' rectangle "🔗 CDN (Cloudflare/AWS)" <<External>> as CDN
+' rectangle "🔗 Auth Service" <<External>> as Auth
+' rectangle "🔗 Discord/Telegram" <<External>> as Community
+
+' ' ============================================
+' ' Связи и потоки данных
+' ' ============================================
+
+' Developer --> ShaderHub : "Загружает/Скачивает шейдеры\n(HTTP/REST)"
+' Artist --> ShaderHub : "Просматривает/\nТестирует шейдеры"
+' Admin --> ShaderHub : "Управляет контентом\nи пользователями"
+
+' ShaderHub --> Git : "Синхронизация репозиториев\n(Git API)"
+' ShaderHub --> CDN : "Хранение и раздача\nассетов (HTTPS)"
+' ShaderHub --> Auth : "Аутентификация\n(OAuth2/JWT)"
+' ShaderHub --> Community : "Уведомления и\nанонсы (Webhook)"
+
+
+
+@enduml
