@@ -1,0 +1,135 @@
+@startuml Use-Case
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle rectangle
+skinparam shadowing false
+skinparam usecase {
+    BackgroundColor White
+    BorderColor Black
+    BorderThickness 2
+}
+
+' --- Цветовые схемы для уровней доступа ---
+skinparam usecase {
+    BackgroundColor<<public>> #D5F5E3
+    BackgroundColor<<auth>> #D6EAF8
+    BackgroundColor<<admin>> #FDEBD0
+    BackgroundColor<<system>> #F9E79F
+}
+
+' --- Актеры ---
+actor "Гость" as Guest
+actor "Разработчик" as Developer
+actor "Администратор" as Admin
+
+Developer --|> Guest
+
+' === Авторизация ===
+package "Авторизация и Аккаунт" {
+    usecase "Вход в систему" as UC_Login <<system>>
+    usecase "Регистрация" as UC_Register <<public>>
+    usecase "2FA Аутентификация" as UC_2FA <<system>>
+    usecase "Восстановление пароля" as UC_Recover <<system>>
+    
+    usecase "Управление профилем" as UC_Profile <<auth>>
+    usecase "Удаление аккаунта" as UC_DeleteAccount <<auth>>
+    usecase "Выход из системы" as UC_Logout <<auth>>
+}
+
+' === Шейдеры ===
+package "Шейдеры" {
+    usecase "Поиск шейдеров" as UC_Search <<public>>
+    usecase "Просмотр шейдера" as UC_View <<public>>
+    usecase "Запуск (Preview)" as UC_Preview <<public>>
+    usecase "Редактирование кода" as UC_Edit <<public>>
+    
+    usecase "Сохранение шейдера" as UC_Save <<auth>>
+    usecase "Клонирование (Fork)" as UC_Fork <<auth>>
+    usecase "Удаление своего шейдера" as UC_DeleteShader <<auth>>
+    usecase "Оценить шейдер" as UC_RateShader <<auth>>
+    
+    usecase "Загрузка ассетов" as UC_UploadAssets <<auth>>
+    usecase "Шейдерный пайплайн" as UC_EditPipeline <<auth>>
+}
+
+' === Социальное ===
+package "Социальное взаимодействие" {
+    usecase "Просмотр комментариев" as UC_ViewComments <<public>>
+    usecase "Написать комментарий" as UC_Comment <<auth>>
+    usecase "Ответить на комментарий" as UC_ReplyComment <<auth>>
+    usecase "Оценить комментарий" as UC_RateComment <<auth>>
+    usecase "Удалить комментарий" as UC_DeleteComment <<auth>>
+}
+
+' === Администрирование ===
+package "Администрирование" {
+    usecase "Модерация контента" as UC_Moderate <<admin>>
+    usecase "Блокировка пользователя" as UC_BanUser <<admin>>
+    usecase "Разблокировка пользователя" as UC_UnbanUser <<admin>>
+}
+
+' === Легенда ===
+' note bottom right
+'   <b>Цветовая легенда:</b>
+'   --
+'   <color:#D5F5E3>🟢 Public</color> : Доступно всем (Гость)
+'   <color:#D6EAF8>🔵 Auth</color> : Требуется вход (Разработчик)
+'   <color:#FDEBD0>🟠 Admin</color> : Только администратор
+'   <color:#F9E79F>🟡 System</color> : Системные функции
+' end note
+
+' --- Ассоциации Актеров (Минимальные) ---
+' Гость (явно показываем только базовые права)
+Guest -- UC_Login
+Guest -- UC_Register
+Guest -- UC_Search
+Guest -- UC_View
+Guest -- UC_Edit
+Guest -- UC_ViewComments
+
+' Разработчик (только уникальные права, остальные по наследству)
+Developer -- UC_Logout
+Developer -- UC_Profile
+Developer -- UC_Save
+Developer -- UC_Fork
+Developer -- UC_DeleteShader
+Developer -- UC_RateShader
+Developer -- UC_Comment
+Developer -- UC_UploadAssets
+
+' Администратор
+Admin -- UC_Moderate
+Admin -- UC_BanUser
+Admin -- UC_UnbanUser
+
+' --- Отношения между Use Cases (Скрытые от актеров) ---
+' Авторизация
+UC_2FA ..> UC_Login : extend
+UC_Recover ..> UC_Login : extend
+UC_Profile ..> UC_Login : <<requires auth>>
+UC_DeleteAccount ..> UC_Login : <<requires auth>>
+
+' Шейдеры
+UC_Preview ..> UC_Edit : include
+UC_Save ..> UC_Edit : include
+UC_Save ..> UC_Login : <<requires auth>>
+UC_Fork ..> UC_Save : include
+UC_DeleteShader ..> UC_Login : <<requires auth>>
+UC_EditPipeline ..> UC_Edit : extend
+UC_UploadAssets ..> UC_Save : include
+
+' Социальное
+UC_View ..> UC_ViewComments : include
+UC_ReplyComment ..> UC_Comment : extend
+UC_Comment ..> UC_Login : <<requires auth>>
+UC_RateShader ..> UC_Login : <<requires auth>>
+UC_RateComment ..> UC_Login : <<requires auth>>
+UC_DeleteComment ..> UC_Login : <<requires auth>>
+
+' Администрирование
+UC_Moderate ..> UC_BanUser : extend
+UC_Moderate ..> UC_UnbanUser : extend
+UC_Moderate ..> UC_DeleteComment : extend
+UC_Moderate ..> UC_DeleteShader : extend
+
+@enduml
