@@ -1,0 +1,42 @@
+@startuml Shader_Publish_BPMN
+
+skinparam sequenceMessageAlign center
+
+skinparam activity {
+    BackgroundColor White
+    BorderColor Black
+    BorderThickness 2
+    FontName "Arial"
+    FontSize 12
+}
+
+skinparam title {
+    FontSize 18
+}
+
+title BPMN: Публикация шейдера
+
+start
+
+:Публикация шейдера;
+
+if (Пользователь авторизован?) then (Да)
+else (Нет)
+    :Вход / Регистрация;
+    note left: <<UC_Login>>
+endif
+
+if (Шейдер валиден?) then (Да)
+    :Ввод метаданных;
+    note left: - Название публикации\n- Ввод тегов\n- Выбор превью\n- т. д.
+
+    :Подтверждение публикации;
+else (Нет)
+    :Редактирование;
+    note right: <<UC_Edit>>
+    stop
+endif
+
+stop
+
+@enduml
