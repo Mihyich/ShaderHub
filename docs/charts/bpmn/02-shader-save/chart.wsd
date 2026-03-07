@@ -1,0 +1,43 @@
+@startuml Shader_Save_BPMN
+
+skinparam sequenceMessageAlign center
+
+skinparam activity {
+    BackgroundColor White
+    BorderColor Black
+    BorderThickness 2
+    FontName "Arial"
+    FontSize 12
+}
+
+skinparam title {
+    FontSize 18
+}
+
+title BPMN: Сохранение шейдера
+
+start
+:Редактирование шейдера;
+:Нажатие "Сохранить";
+
+if (Пользователь авторизован?) then (Нет)
+    :Вход / Регистрация;
+    note left: <<UC_Login>>
+else (Да)
+    :Валидация кода (Компиляция);
+    
+    if (Код валиден?) then (Да)
+    else (Нет)
+        :Предупреждение об ошибках;
+        
+        if (Все равно сохранить?) then (Да)
+        else (Нет)
+            stop
+        endif
+    endif
+endif
+
+:Подтверждение сохранения;
+stop
+
+@enduml
