@@ -1,0 +1,45 @@
+@startuml Shader_Edit_BPMN
+
+skinparam sequenceMessageAlign center
+
+skinparam activity {
+    BackgroundColor White
+    BorderColor Black
+    BorderThickness 2
+    FontName "Arial"
+    FontSize 12
+}
+
+skinparam title {
+    FontSize 18
+}
+
+title BPMN: Редактирование шейдера
+
+start
+
+if (Выбор действия) is (Создать новый шейдер) then
+else (Позаимствовать чужой шейдер)
+endif
+
+:Редактирование шейдера;
+note right: <<UC_Edit>>
+
+if (Выбор действия) is (Сохранить) then
+    :Сохранение;
+    note left: <<UC_Save>>
+    stop
+else (Просмотреть)
+    if (шейдер валиден?) then (да)
+        :Запуск шейдера;
+        note left: Шейдер просматривается только\nсамим текущим пользователем
+    else (нет)
+        :Редактирование;
+        note right: <<UC_Edit>>
+        stop
+    endif
+endif
+
+stop
+
+@enduml
