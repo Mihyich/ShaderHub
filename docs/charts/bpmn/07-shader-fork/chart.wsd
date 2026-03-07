@@ -1,0 +1,32 @@
+@startuml Shader_Fork_BPMN
+
+skinparam sequenceMessageAlign center
+
+skinparam activity {
+    BackgroundColor White
+    BorderColor Black
+    BorderThickness 2
+    FontName "Arial"
+    FontSize 12
+}
+
+skinparam title {
+    FontSize 18
+}
+
+title BPMN: Вилка шейдера
+
+start
+
+:Выбрать чужой\nопубликованный шейдер;
+
+if (Автор позволяет создавать вилку?) then (Да)
+    :Создание нового шейдера\nна основе публикации;
+    :Редактирование шейдера;
+    note left: <<UC_Edit>>
+    stop
+else (Нет)
+    stop
+endif
+
+@enduml
