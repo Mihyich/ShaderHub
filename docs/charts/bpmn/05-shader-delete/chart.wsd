@@ -1,0 +1,33 @@
+@startuml Shader_Delete_BPMN
+
+skinparam sequenceMessageAlign center
+
+skinparam activity {
+    BackgroundColor White
+    BorderColor Black
+    BorderThickness 2
+    FontName "Arial"
+    FontSize 12
+}
+
+skinparam title {
+    FontSize 18
+}
+
+title BPMN: Удаление шейдера
+
+start
+
+:Нажатие <<Удалить>>;
+note right: Авторизированный пользователь\nхочет удалить свой\nсохраненный шейдер
+
+if (Точно удалить?) then (Да)
+    :Удалие шейдера;
+    note left: <<UC_Delete>>
+else (Нет)
+    stop
+endif
+
+stop
+
+@enduml
