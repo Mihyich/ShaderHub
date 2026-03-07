@@ -1,0 +1,53 @@
+@startuml Shader_View_BPMN
+
+skinparam sequenceMessageAlign center
+
+skinparam activity {
+    BackgroundColor White
+    BorderColor Black
+    BorderThickness 2
+    FontName "Arial"
+    FontSize 12
+}
+
+skinparam title {
+    FontSize 18
+}
+
+title BPMN: Просмотр шейдера
+
+start
+
+:Просмотр ленты\nопубликованных шейдеров;
+note right: Не нужно\nбыть авторизованным
+
+if (Использование поисковой строки?) then (Да)
+    :Обновление ленты;
+else (Нет)
+endif
+
+:Выбор шейдера из ленты;
+
+fork
+:Запуск проекта;
+:Проигрывание;
+fork again
+:Загрузка комментариев;
+end merge
+
+switch (Действие)
+    case (Оценить шейдер)
+        :Оценивание\nопубликованного шейдера;
+        stop
+    case (Оценить комментарий)
+        :Оценивание комментария;
+        stop
+    case (Оставить комментарий)
+        :Комментирование;
+        stop
+    case (Редактировать шейдер)
+        :Создать вилку от\nопубликованного шейдера;
+        stop
+endswitch
+
+@enduml
