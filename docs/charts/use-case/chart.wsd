@@ -75,16 +75,6 @@ package "Администрирование" {
     usecase "Разблокировка пользователя" as UC_UnbanUser <<admin>>
 }
 
-' === Легенда ===
-' note bottom right
-'   <b>Цветовая легенда:</b>
-'   --
-'   <color:#D5F5E3>🟢 Public</color> : Доступно всем (Гость)
-'   <color:#D6EAF8>🔵 Auth</color> : Требуется вход (Разработчик)
-'   <color:#FDEBD0>🟠 Admin</color> : Только администратор
-'   <color:#F9E79F>🟡 System</color> : Системные функции
-' end note
-
 ' --- Ассоциации Актеров (Минимальные) ---
 ' Гость (явно показываем только базовые права)
 Guest -- UC_Login
