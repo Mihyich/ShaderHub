@@ -1,0 +1,67 @@
+@startuml Authentication_Flow_BPMN
+
+skinparam sequenceMessageAlign center
+
+skinparam activity {
+    BackgroundColor White
+    BorderColor Black
+    BorderThickness 2
+    FontName "Arial"
+    FontSize 12
+}
+
+skinparam title {
+    FontSize 18
+}
+
+title BPMN: Аутентификая (Вход + Регистрация + 2FA + Востанновление пароля)
+
+start
+:Ввод учетных данных\n(Email/Password);
+note right: <<UC_Login>>
+
+if (Есть аккаунт?) then (Нет)
+    :Заполнение формы\nрегистрации;
+    note right: <<UC_Register>>
+    :Подтверждение email;
+    :Создание аккаунта в БД;
+    :Генерация токена\nподтверждения;
+    :Отправка Email\n(подтверждение);
+else (Да)
+    :Проверка кредов в БД;
+    note right: <<UC_Login>>
+    
+    if (Креды верны?) then (Нет)
+        :Запрос сброса пароля;
+        note right: <<UC_Recover>>
+        :Генерация токена сброса;
+        :Отправка Email\n(сброс пароля);
+        :Ввод нового пароля;
+        :Обновление пароля в БД;
+    else (Да)
+        :Проверка 2FA статуса;
+        note right: <<UC_2FA>>
+        
+        if (2FA включена?) then (Да)
+            :Ввод 2FA кода;
+            :Валидация 2FA кода;
+            :2FA Провайдер\n(TOTP/SMS);
+            
+            if (Код верный?) then (Да)
+                :Генерация сессии\n(JWT/Token);
+            else (Нет)
+                :Логирование ошибки;
+                stop
+            endif
+        else (Нет)
+            :Генерация сессии\n(JWT/Token);
+        endif
+    endif
+endif
+
+:Логирование события;
+:Выдача токена сессии;
+
+stop
+
+@enduml
