@@ -7,6 +7,7 @@ skinparam usecase {
     BackgroundColor White
     BorderColor Black
     BorderThickness 2
+    FontSize 12
 }
 
 ' --- Цветовые схемы для уровней доступа ---
@@ -16,6 +17,12 @@ skinparam usecase {
     BackgroundColor<<admin>> #FDEBD0
     BackgroundColor<<system>> #F9E79F
 }
+
+skinparam title {
+    FontSize 18
+}
+
+title Use-Case диаграмма вариантов использования
 
 ' --- Актеры ---
 actor "Гость" as Guest
