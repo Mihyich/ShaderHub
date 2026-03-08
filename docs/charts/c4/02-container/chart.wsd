@@ -18,85 +18,106 @@ skinparam rectangle {
     BackgroundColor<<Person>> MediumAquaMarine
     BorderColor<<Person>> ForestGreen
 
-    BackgroundColor<<System>> LightBlue
-    BorderColor<<System>> DarkBlue
-
-    BackgroundColor<<External>> Coral
-    BorderColor<<External>> Chocolate
-
     BackgroundColor<<Container>> #438DD5
     BorderColor<<Container>> #2E6295
 
     BackgroundColor<<Database>> #B3B3B3
     BorderColor<<Database>> #666666
-    
+
+    BackgroundColor<<External>> Coral
+    BorderColor<<External>> Chocolate
+
     BorderThickness 2
 }
 
 title C4: Диаграмма контейнеров
 
 ' ============================================
-' Акторы
+' Элементы
 ' ============================================
+
+' --- Внешний мир ---
 rectangle "Гость" <<Person>> as Guest
 rectangle "Разработчик" <<Person>> as Developer
-rectangle "Администратор" <<Person>> as Admin
+rectangle "Админ" <<Person>> as Admin
+
+rectangle "CDN\nОблачное хранилище" <<External>> as CDN
+rectangle "OAuth\n(GitHub/Google/Telegram)" <<External>> as OAuth
+rectangle "Email\nПочтовый сервис" <<External>> as Email
+
+' --- Система ---
+rectangle "API Gateway" <<Container>> as Gateway
+rectangle "Web Client" <<Container>> as WebClient
+
+rectangle "Auth Service" <<Container>> as AuthService
+rectangle "Shader Service" <<Container>> as ShaderService
+rectangle "Asset Service" <<Container>> as AssetService
+rectangle "Comment Service" <<Container>> as CommentService
+rectangle "Notification Service" <<Container>> as NotifyService
+
+' --- Хранилища ---
+rectangle "Auth DB" <<Database>> as AuthDB
+rectangle "Shader DB" <<Database>> as ShaderDB
+rectangle "Comment DB" <<Database>> as CommentDB
+rectangle "Notification DB" <<Database>> as NotifyDB
+rectangle "MinIO" <<Database>> as MinIO
+rectangle "Redis" <<Database>> as Redis
 
 ' ============================================
-' Граница системы ShaderHub
+' Связи (Логическая группировка)
 ' ============================================
-rectangle "ShaderHub" <<System>> as ShaderHub {
 
-    ' --- Контейнеры внутри системы ---
-    
-    ' Веб-клиент
-    rectangle "Web Client\nNginx + SPA" <<Container>> as WebClient {
-    }
-    
-    ' API Сервер
-    rectangle "API Server\nBackend" <<Container>> as APIServer {
-    }
-    
-    ' База данных
-    rectangle "PostgreSQL\nДанные пользователей и шейдеров" <<Database>> as Database {
-    }
-    
-    ' Хранилище файлов
-    rectangle "MinIO\nАссеты и превью" <<Database>> as MinIO {
-    }
-    
-    ' Кэш
-    rectangle "Redis\nСессии и кэш" <<Database>> as Redis {
-    }
-}
+' --- Пользователи : CDN : Gateway ---
+Guest     --> WebClient : HTTPS
+Developer --> WebClient : HTTPS
+Admin     --> WebClient : HTTPS
+WebClient --> CDN       : Загрузка статики
+WebClient --> Gateway   : API Запросы
 
-' ============================================
-' Внешние системы
-' ============================================
-rectangle "SMTP / Почтовый сервер" <<External>> as EmailService
-rectangle "OAuth Provider\n(Google/GitHub/Telegram)" <<External>> as AuthProvider
-rectangle "CDN / Cloud Storage" <<External>> as CDN
+' --- Gateway : Сервисы (HTTP) ---
+Gateway ----> AuthService    : /auth/*
+Gateway ----> ShaderService  : /shaders/*
+Gateway ----> AssetService   : /assets/*
+Gateway ----> CommentService : /comments/*
+Gateway ----> NotifyService  : /notifications/*
 
-' ============================================
-' Связи: Пользователи → Система
-' ============================================
-Guest --> WebClient : "(HTTPS)\nПросмотр, Поиск,\nПредпросмотр шейдеров"
-Developer --> WebClient : "(HTTPS)\nВход, Регистрация,\nСохранение, Загрузка ассетов,\nКомментарии, Оценка"
-Admin --> WebClient : "(HTTPS)\nМодерация,\nБлокировка пользователей,\nУправление контентом"
+' --- Сервисы : Базы данных (SQL) ---
+AuthService    --> AuthDB    : SQL
+ShaderService  --> ShaderDB  : SQL
+AssetService   --> MinIO     : S3: PutObject\n- текстуры\n- геометрия\n- т. д.
+CommentService --> CommentDB : SQL
+NotifyService  --> NotifyDB  : SQL
 
-' ============================================
-' Связи: Внутри системы
-' ============================================
-WebClient --> APIServer : "(REST/GraphQL)\nAPI запросы"
-APIServer --> Database : "(SQL)\nЧтение/Запись данных"
-APIServer --> MinIO : "(S3 API)\nЗагрузка/Получение\nфайлов"
-APIServer --> Redis : "(Redis Protocol)\nКэширование, Сессии"
 
-' ============================================
-' Связи: Система → Внешние сервисы
-' ============================================
-APIServer --> EmailService : "(SMTP/API)\nОтправка писем"
-APIServer --> AuthProvider : "(OAuth2)\nАутентификация"
-MinIO ..> CDN : "оптимизация передачи\nфайлов"
+' --- Redis (События и Кэш) ---
+AuthService    ----> Redis : Сессии / Кэш
+ShaderService  ----> Redis : Кэш / Pub
+CommentService ----> Redis : Rate Limit / Pub
+NotifyService  ----> Redis : Sub (События)
+
+' --- Внешние интеграции ---
+OAuth <----- AuthService   : OAuth2
+Email <----- AuthService   : SMTP (Транзакции)
+Email <----- NotifyService : SMTP (Уведомления)
+
+legend bottom
+  <b>Межсервисное взаимодействие</b>
+
+  | <b>От</b>      | <b>Кому</b>         | <b>Протокол</b> | <b>Цель</b>                    |
+  |                |                     |                 |                                |
+  | AuthService    | ShaderService       | gRPC            | Проверка токена пользователя   |
+  | AuthService    | CommentService      | gRPC            | Проверка прав доступа          |
+  | AuthService    | AssetService        | gRPC            | Загрузка аватара профиля       |
+  |                |                     |                 |                                |
+  | ShaderService  | CommentService      | gRPC            | Проверка существования шейдера |
+  | ShaderService  | AssetService        | gRPC            | Загрузка текстур и геометрии   |
+  | ShaderService  | NotificationService | Событие         | Уведомление о новом шейдере    |
+  |                |                     |                 |                                |
+  | CommentService | NotificationService | Событие         | Уведомление о комментарии      |
+  | CommentService | AuthService         | gRPC            | Получение данных автора        |
+  |                |                     |                 |                                |
+  | AssetService   | NotificationService | Событие         | Уведомление о загрузке файла   |
+  | AssetService   | CDN                 | HTTP            | Инвалидация кэша               |
+endlegend
 
 @enduml
