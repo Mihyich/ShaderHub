@@ -28,8 +28,8 @@ title C4: Контекстная диаграмма
 ' ============================================
 
 ' Акторы
-rectangle "Гость" <<Person>> as Guest
-rectangle "Разработчик" <<Person>> as Developer
+rectangle "Гость"         <<Person>> as Guest
+rectangle "Разработчик"   <<Person>> as Developer
 rectangle "Администратор" <<Person>> as Admin
 
 ' ============================================
@@ -40,9 +40,9 @@ rectangle "ShaderHub\nПлатформа для хранения, разрабо
 ' ============================================
 ' Внешние системы
 ' ============================================
-rectangle "SMTP\nПочтовый сервер" <<External>> as SMTP
+rectangle "SMTP\nПочтовый сервер"                    <<External>> as SMTP
 rectangle "OAuth Provider\n(Google/GitHub/Telegram)" <<External>> as OAuth
-rectangle "CDN\nОблачное хранилище" <<External>> as CDN
+rectangle "CDN\nОблачное хранилище"                  <<External>> as CDN
 
 ' ============================================
 ' Связи
@@ -58,33 +58,8 @@ Developer --> ShaderHub : "Вход, Регистрация,\nСохранени
 Admin --> ShaderHub : "Модерация,\nБлокировка пользователей,\nУправление контентом"
 
 ' --- Внешние интеграции ---
-ShaderHub --> SMTP : "Отправка писем\n(подтверждение, восстановление)"
+ShaderHub --> SMTP  : "Отправка писем\n(подтверждение, восстановление)"
 ShaderHub --> OAuth : "Аутентификация\n(OAuth2)"
-ShaderHub --> CDN : "Хранение и раздача\nассетов и превью"
-
-' ' Основная система
-' rectangle "ShaderHub" <<System>> as ShaderHub {
-' }
-
-' ' Внешние системы
-' rectangle "🔗 GitHub/GitLab" <<External>> as Git
-' rectangle "🔗 CDN (Cloudflare/AWS)" <<External>> as CDN
-' rectangle "🔗 Auth Service" <<External>> as Auth
-' rectangle "🔗 Discord/Telegram" <<External>> as Community
-
-' ' ============================================
-' ' Связи и потоки данных
-' ' ============================================
-
-' Developer --> ShaderHub : "Загружает/Скачивает шейдеры\n(HTTP/REST)"
-' Artist --> ShaderHub : "Просматривает/\nТестирует шейдеры"
-' Admin --> ShaderHub : "Управляет контентом\nи пользователями"
-
-' ShaderHub --> Git : "Синхронизация репозиториев\n(Git API)"
-' ShaderHub --> CDN : "Хранение и раздача\nассетов (HTTPS)"
-' ShaderHub --> Auth : "Аутентификация\n(OAuth2/JWT)"
-' ShaderHub --> Community : "Уведомления и\nанонсы (Webhook)"
-
-
+ShaderHub --> CDN   : "Хранение и раздача\nассетов и превью"
 
 @enduml

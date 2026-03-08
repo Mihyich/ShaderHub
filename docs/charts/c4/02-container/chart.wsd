@@ -31,33 +31,33 @@ title C4: Диаграмма контейнеров
 ' ============================================
 
 ' --- Внешний мир ---
-rectangle "Гость" <<Person>> as Guest
+rectangle "Гость"       <<Person>> as Guest
 rectangle "Разработчик" <<Person>> as Developer
-rectangle "Админ" <<Person>> as Admin
+rectangle "Админ"       <<Person>> as Admin
 
-rectangle "CDN\nОблачное хранилище" <<External>> as CDN
+rectangle "CDN\nОблачное хранилище"         <<External>> as CDN
 rectangle "OAuth\n(GitHub/Google/Telegram)" <<External>> as OAuth
-rectangle "Email\nПочтовый сервис" <<External>> as Email
+rectangle "Email\nПочтовый сервис"          <<External>> as Email
 
 ' --- Система ---
 rectangle "API Gateway" <<Container>> as Gateway
-rectangle "Web Client" <<Container>> as WebClient
+rectangle "Web Client"  <<Container>> as WebClient
 
-rectangle "Auth Service" <<Container>> as AuthService
-rectangle "Profile Service" <<Container>> as ProfileService
-rectangle "Shader Service" <<Container>> as ShaderService
-rectangle "Asset Service" <<Container>> as AssetService
-rectangle "Comment Service" <<Container>> as CommentService
+rectangle "Auth Service"         <<Container>> as AuthService
+rectangle "Profile Service"      <<Container>> as ProfileService
+rectangle "Shader Service"       <<Container>> as ShaderService
+rectangle "Asset Service"        <<Container>> as AssetService
+rectangle "Comment Service"      <<Container>> as CommentService
 rectangle "Notification Service" <<Container>> as NotifyService
 
 ' --- Хранилища ---
-rectangle "Auth DB" <<Database>> as AuthDB
-rectangle "Profile DB" <<Database>> as ProfileDB
-rectangle "Shader DB" <<Database>> as ShaderDB
-rectangle "Comment DB" <<Database>> as CommentDB
+rectangle "Auth DB"         <<Database>> as AuthDB
+rectangle "Profile DB"      <<Database>> as ProfileDB
+rectangle "Shader DB"       <<Database>> as ShaderDB
+rectangle "Comment DB"      <<Database>> as CommentDB
 rectangle "Notification DB" <<Database>> as NotifyDB
-rectangle "MinIO" <<Database>> as MinIO
-rectangle "Redis" <<Database>> as Redis
+rectangle "MinIO"           <<Database>> as MinIO
+rectangle "Redis"           <<Database>> as Redis
 
 ' ============================================
 ' Связи (Логическая группировка)
