@@ -259,7 +259,7 @@ mode_check() {
 
     if [ $failed -gt 0 ]; then
         log_error "Проверка не пройдена. Найдено проблем: $failed"
-        log_info "Выполните: $0 all"
+        log_info "Выполните: CHARTS_DIR=$CHARTS_DIR $0 file_all"
         exit 1
     else
         log_info "Все SVG актуальны (проверено: $checked)"
