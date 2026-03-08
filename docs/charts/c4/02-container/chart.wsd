@@ -1,0 +1,102 @@
+@startuml C4_Container
+
+skinparam sequenceMessageAlign center
+
+skinparam activity {
+    BackgroundColor White
+    BorderColor Black
+    BorderThickness 2
+    FontName "Arial"
+    FontSize 12
+}
+
+skinparam title {
+    FontSize 18
+}
+
+skinparam rectangle {
+    BackgroundColor<<Person>> MediumAquaMarine
+    BorderColor<<Person>> ForestGreen
+
+    BackgroundColor<<System>> LightBlue
+    BorderColor<<System>> DarkBlue
+
+    BackgroundColor<<External>> Coral
+    BorderColor<<External>> Chocolate
+
+    BackgroundColor<<Container>> #438DD5
+    BorderColor<<Container>> #2E6295
+
+    BackgroundColor<<Database>> #B3B3B3
+    BorderColor<<Database>> #666666
+    
+    BorderThickness 2
+}
+
+title Диаграмма C4 контейнеров
+
+' ============================================
+' Акторы
+' ============================================
+rectangle "Гость" <<Person>> as Guest
+rectangle "Разработчик" <<Person>> as Developer
+rectangle "Администратор" <<Person>> as Admin
+
+' ============================================
+' Граница системы ShaderHub
+' ============================================
+rectangle "ShaderHub" <<System>> as ShaderHub {
+
+    ' --- Контейнеры внутри системы ---
+    
+    ' Веб-клиент
+    rectangle "Web Client\nNginx + SPA" <<Container>> as WebClient {
+    }
+    
+    ' API Сервер
+    rectangle "API Server\nBackend" <<Container>> as APIServer {
+    }
+    
+    ' База данных
+    rectangle "PostgreSQL\nДанные пользователей и шейдеров" <<Database>> as Database {
+    }
+    
+    ' Хранилище файлов
+    rectangle "MinIO\nАссеты и превью" <<Database>> as MinIO {
+    }
+    
+    ' Кэш
+    rectangle "Redis\nСессии и кэш" <<Database>> as Redis {
+    }
+}
+
+' ============================================
+' Внешние системы
+' ============================================
+rectangle "SMTP / Почтовый сервер" <<External>> as EmailService
+rectangle "OAuth Provider\n(Google/GitHub/Telegram)" <<External>> as AuthProvider
+rectangle "CDN / Cloud Storage" <<External>> as CDN
+
+' ============================================
+' Связи: Пользователи → Система
+' ============================================
+Guest --> WebClient : "(HTTPS)\nПросмотр, Поиск,\nПредпросмотр шейдеров"
+Developer --> WebClient : "(HTTPS)\nВход, Регистрация,\nСохранение, Загрузка ассетов,\nКомментарии, Оценка"
+Admin --> WebClient : "(HTTPS)\nМодерация,\nБлокировка пользователей,\nУправление контентом"
+
+' ============================================
+' Связи: Внутри системы
+' ============================================
+WebClient --> APIServer : "(REST/GraphQL)\nAPI запросы"
+APIServer --> Database : "(SQL)\nЧтение/Запись данных"
+APIServer --> MinIO : "(S3 API)\nЗагрузка/Получение\nфайлов"
+APIServer --> Redis : "(Redis Protocol)\nКэширование, Сессии"
+
+' ============================================
+' Связи: Система → Внешние сервисы
+' ============================================
+APIServer --> EmailService : "(SMTP/API)\nОтправка писем"
+APIServer --> AuthProvider : "(OAuth2)\nАутентификация"
+MinIO ..> CDN : "оптимизация передачи\nфайлов"
+
+@enduml
