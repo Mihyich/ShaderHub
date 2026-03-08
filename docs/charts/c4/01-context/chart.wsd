@@ -46,9 +46,9 @@ rectangle "ShaderHub\nПлатформа для хранения, разрабо
 ' ============================================
 ' Внешние системы
 ' ============================================
-rectangle "SMTP / Почтовый сервер" <<External>> as SMTP
+rectangle "SMTP\nПочтовый сервер" <<External>> as SMTP
 rectangle "OAuth Provider\n(Google/GitHub/Telegram)" <<External>> as OAuth
-rectangle "CDN / Cloud Storage" <<External>> as CDN
+rectangle "CDN\nОблачное хранилище" <<External>> as CDN
 
 ' ============================================
 ' Связи
