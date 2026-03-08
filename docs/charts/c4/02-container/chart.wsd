@@ -2,14 +2,6 @@
 
 skinparam sequenceMessageAlign center
 
-skinparam activity {
-    BackgroundColor White
-    BorderColor Black
-    BorderThickness 2
-    FontName "Arial"
-    FontSize 12
-}
-
 skinparam title {
     FontSize 18
 }
@@ -28,6 +20,8 @@ skinparam rectangle {
     BorderColor<<External>> Chocolate
 
     BorderThickness 2
+    FontName "Arial"
+    FontSize 12
 }
 
 title C4: Диаграмма контейнеров
