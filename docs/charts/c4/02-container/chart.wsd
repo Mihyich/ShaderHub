@@ -44,6 +44,7 @@ rectangle "API Gateway" <<Container>> as Gateway
 rectangle "Web Client" <<Container>> as WebClient
 
 rectangle "Auth Service" <<Container>> as AuthService
+rectangle "Profile Service" <<Container>> as ProfileService
 rectangle "Shader Service" <<Container>> as ShaderService
 rectangle "Asset Service" <<Container>> as AssetService
 rectangle "Comment Service" <<Container>> as CommentService
@@ -51,6 +52,7 @@ rectangle "Notification Service" <<Container>> as NotifyService
 
 ' --- Хранилища ---
 rectangle "Auth DB" <<Database>> as AuthDB
+rectangle "Profile DB" <<Database>> as ProfileDB
 rectangle "Shader DB" <<Database>> as ShaderDB
 rectangle "Comment DB" <<Database>> as CommentDB
 rectangle "Notification DB" <<Database>> as NotifyDB
@@ -70,6 +72,7 @@ WebClient --> Gateway   : API Запросы
 
 ' --- Gateway : Сервисы (HTTP) ---
 Gateway ----> AuthService    : /auth/*
+Gateway ----> ProfileService : /profile/*
 Gateway ----> ShaderService  : /shaders/*
 Gateway ----> AssetService   : /assets/*
 Gateway ----> CommentService : /comments/*
@@ -77,14 +80,15 @@ Gateway ----> NotifyService  : /notifications/*
 
 ' --- Сервисы : Базы данных (SQL) ---
 AuthService    --> AuthDB    : SQL
+ProfileService --> ProfileDB : SQL
 ShaderService  --> ShaderDB  : SQL
-AssetService   --> MinIO     : S3: PutObject\n- текстуры\n- геометрия\n- т. д.
+AssetService   --> MinIO     : S3
 CommentService --> CommentDB : SQL
 NotifyService  --> NotifyDB  : SQL
 
-
 ' --- Redis (События и Кэш) ---
 AuthService    ----> Redis : Сессии / Кэш
+ProfileService ----> Redis : Кэш профилей / Pub
 ShaderService  ----> Redis : Кэш / Pub
 CommentService ----> Redis : Rate Limit / Pub
 NotifyService  ----> Redis : Sub (События)
@@ -99,17 +103,21 @@ legend bottom
 
   | <b>От</b>      | <b>Кому</b>         | <b>Протокол</b> | <b>Цель</b>                    |
   |                |                     |                 |                                |
+  | AuthService    | ProfileService      | gRPC            | Передача событий               |
   | AuthService    | ShaderService       | gRPC            | Проверка токена пользователя   |
   | AuthService    | CommentService      | gRPC            | Проверка прав доступа          |
   | AuthService    | AssetService        | gRPC            | Загрузка аватара профиля       |
   |                |                     |                 |                                |
+  | ShaderService  | ProfileService      | gRPC            | Получение информации           |
   | ShaderService  | CommentService      | gRPC            | Проверка существования шейдера |
   | ShaderService  | AssetService        | gRPC            | Загрузка текстур и геометрии   |
   | ShaderService  | NotificationService | Событие         | Уведомление о новом шейдере    |
   |                |                     |                 |                                |
+  | CommentService | ProfileService      | gRPC            | Получение информации           |
   | CommentService | NotificationService | Событие         | Уведомление о комментарии      |
   | CommentService | AuthService         | gRPC            | Получение данных автора        |
   |                |                     |                 |                                |
+  | AssetService   | ProfileService      | gRPC            | Получение информации           |
   | AssetService   | NotificationService | Событие         | Уведомление о загрузке файла   |
   | AssetService   | CDN                 | HTTP            | Инвалидация кэша               |
 endlegend
