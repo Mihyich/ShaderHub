@@ -1,0 +1,156 @@
+@startuml C4_Component_ProfileService
+
+skinparam sequenceMessageAlign center
+
+skinparam title {
+    FontSize 18
+}
+
+skinparam rectangle {
+    BackgroundColor<<Person>> MediumAquaMarine
+    BorderColor<<Person>> ForestGreen
+
+    BackgroundColor<<Container>> #438DD5
+    BorderColor<<Container>> #2E6295
+
+    BackgroundColor<<Database>> #B3B3B3
+    BorderColor<<Database>> #666666
+
+    BackgroundColor<<External>> Coral
+    BorderColor<<External>> Chocolate
+
+    BackgroundColor<<Component>> White
+    BorderColor<<Component>> #438DD5
+
+    BorderThickness 2
+    FontName "Arial"
+    FontSize 12
+}
+
+title C4: Диаграмма компонентов Profile сервиса
+
+' ============================================
+' Внешний контекст
+' ============================================
+rectangle "Гость"       <<Person>> as Guest
+rectangle "Разработчик" <<Person>> as Developer
+rectangle "Админ"       <<Person>> as Admin
+
+rectangle "API Gateway"          <<Container>> as Gateway
+rectangle "Auth Service"         <<Container>> as AuthService
+rectangle "Shader Service"       <<Container>> as ShaderService
+rectangle "Asset Service"        <<Container>> as AssetService
+rectangle "Comment Service"      <<Container>> as CommentService
+rectangle "Notification Service" <<Container>> as NotifyService
+
+rectangle "Profile DB"    <<Database>> as ProfileDB
+rectangle "Redis"         <<Database>> as Redis
+rectangle "Email\nСервис" <<External>> as Email
+
+' ============================================
+' Profile Service Container
+' ============================================
+rectangle "Profile Service" <<Container>> {
+    
+    ' --- API Layer ---
+    rectangle "Profile Controller\n(HTTP REST API)" <<Component>> as ProfileCtrl
+    rectangle "Admin Controller\n(Модерация)"       <<Component>> as AdminCtrl
+    rectangle "gRPC Server\n(Внутренний API)"       <<Component>> as GRPCServer
+    note right: Точка входа\nдля внешних сервисов
+    
+    ' --- Business Logic ---
+    rectangle "Profile Manager\n(Основная логика)"     <<Component>> as ProfileMgr
+    rectangle "Avatar Service\n(Аватар пользователя)"  <<Component>> as AvatarSvc
+    rectangle "Nickname Service\n(Уникальность)"       <<Component>> as NickSvc
+    rectangle "Reputation Service\n(Репутация/Статус)" <<Component>> as RepSvc
+    rectangle "Moderation Manager\n(Модерация)"        <<Component>> as ModMgr
+    rectangle "Violation Service\n(Нарушения)"         <<Component>> as ViolSvc
+    rectangle "Ban Service\n(Баны)"                    <<Component>> as BanSvc
+    
+    ' --- Integration ---
+    rectangle "Asset Client\n(Загрузка аватара)" <<Component>> as AssetCli
+    rectangle "Email Client\n(SMTP)"             <<Component>> as EmailCli
+    rectangle "Event Publisher\n(Redis Pub/Sub)" <<Component>> as EventPub
+    
+    ' --- Data Access ---
+    rectangle "Profile Repository\n(SQL)"   <<Component>> as ProfileRepo
+    rectangle "Violation Repository\n(SQL)" <<Component>> as ViolRepo
+
+}
+
+' ============================================
+' Связи
+' ============================================
+
+' --- Входной трафик ---
+Guest     --> Gateway : HTTPS
+Developer --> Gateway : HTTPS
+Admin     --> Gateway : HTTPS
+
+Gateway   --> ProfileCtrl : GET/PUT /profile\nPUT /avatar\nPUT /nickname
+Gateway   --> AdminCtrl : GET /admin/users\nPOST /admin/ban\nPOST /admin/warn
+
+' --- gRPC от других сервисов ---
+AuthService     --> GRPCServer : gRPC (GetUserInfo)
+ShaderService   --> GRPCServer : gRPC (GetUserInfo)
+CommentService  --> GRPCServer : gRPC (GetUserInfo)
+AssetService    ---> GRPCServer : gRPC (GetUserInfo)
+NotifyService   ----> GRPCServer : gRPC (GetUserInfo)
+
+' --- Внутренний поток ---
+ProfileCtrl ---> ProfileMgr : Обновление профиля
+AdminCtrl   ---> ModMgr     : Действия модератора
+
+ProfileMgr  .> ProfileRepo : CRUD Профиль
+ProfileMgr  --->  AvatarSvc   : Аватар
+ProfileMgr  --->  NickSvc     : Никнейм
+ProfileMgr  --->  RepSvc      : Репутация
+
+AvatarSvc ----> AssetCli    : Загрузка в Asset Service
+AvatarSvc ----> ProfileRepo : Сохранение ссылки
+
+NickSvc ----> ProfileRepo : Проверка уникальности
+
+RepSvc ----> ProfileRepo : Чтение/Запись репутации
+RepSvc ----> ViolRepo    : Чтение нарушений
+
+' --- Moderation ---
+ModMgr --->  ViolSvc     : Создание нарушения
+ModMgr --->  BanSvc      : Применение бана
+EmailCli <- ModMgr       : Уведомление пользователю
+ModMgr .>    ProfileRepo : Обновление статуса
+
+ViolSvc ----> ViolRepo    : CRUD Нарушения
+BanSvc  ----> ProfileRepo : Установка флагов
+BanSvc  ----> EventPub    : Событие (UserBanned)
+
+' --- gRPC Server ---
+' GRPCServer --> ProfileRepo : Чтение профиля
+' GRPCServer --> RepSvc      : Проверка репутации
+' GRPCServer --> BanSvc      : Проверка блокировок
+
+
+' --- События ---
+EventPub --->       Redis : Pub (ProfileUpdated\nUserBanned)
+NotifyService -----------> Redis : Sub (События)
+
+' --- Внешние ---
+AssetService <----------- AssetCli : HTTP/gRPC (Загрузка файла)
+Email <-- EmailCli        : SMTP (Ban Notification)
+
+' --- БД ---
+ProfileRepo ---> ProfileDB : SQL (profiles, reputation)
+ViolRepo    ---> ProfileDB : SQL (violations, warnings, bans)
+
+legend bottom
+  <b>Компоненты Profile Service</b>
+
+  | <b>Группа</b>       | <b>Компоненты</b>                                          |
+  | API Layer           | Profile Controller, Admin Controller, gRPC Server          |
+  | Profile Logic       | Profile Manager, Avatar/Nickname/Reputation Services       |
+  | Moderation Logic    | Moderation Manager, Violation/Ban Services                 |
+  | Integration         | Asset/Email Clients, Event Publisher                       |
+  | Data Access         | Profile/Violation Repositories                             |
+endlegend
+
+@enduml
