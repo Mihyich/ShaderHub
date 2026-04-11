@@ -1,0 +1,93 @@
+@startuml ER_AuthService
+
+skinparam title {
+    FontSize 18
+}
+
+hide circle
+skinparam linetype ortho
+
+skinparam entity {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+}
+
+title ER: Auth Service
+
+entity "**users**" as Users {
+    * **id**: UUID <<PK>>
+    --
+    * **user_name**: VARCHAR(32) <<Unique>>
+    * **display_name**: VARCHAR(128)
+    * **avatar_url**: VARCHAR(2048)
+    --
+    * **status**: ENUM ('PENDING', 'ACTIVE',\n'BANNED', 'SUSPENDED', 'DELETED')\n<<Default: 'PENDING'>>
+    --
+    * **mfa_enabled**: BOOLEAN <<Deafult: false>>
+    --
+    * **created_at**: TIMESTAMPTZ
+    * **updated_at**: TIMESTAMPTZ
+}
+
+entity "**user_identities**" as UserIdentities {
+    * **id**: UUID <<PK>>
+    * **user_id**: UUID <<FK>>
+    --
+    * **provider**: ENUM ('LOCAL', 'GOOGLE', 'GITHUB')
+    * **provider_key**: VARCHAR(320) <<Unique>>
+    --
+    * **password_hash**: VARCHAR(255) <<Nullable>>
+    --
+    * **created_at**: TIMESTAMPTZ
+    * **updated_at**: TIMESTAMPTZ
+    * **last_login_at**: TIMESTAMPTZ
+}
+
+entity "**user_emails**" as UserEmails {
+    * **id**: UUID <<PK>>
+    * **user_id**: UUID <<FK>>
+    --
+    * **email**: VARCHAR(320) <<Unique>>
+    * **source**: ENUM ('LOCAL', 'GOOGLE', 'GITHUB')
+    * **is_primary**: BOOLEAN <<Default: false>>
+    * **is_verified**: BOOLEAN <<Default: false>>
+    --
+    * **created_at**: TIMESTAMPTZ
+    * **updated_at**: TIMESTAMPTZ
+}
+
+entity "**user_sessions**" as UserSessions {
+    * **id**: UUID <<PK>>
+    * **user_id**: UUID <<FK>>
+    --
+    * **user_agent**: TEXT
+    --
+    * **fingerprint_hash**: VARCHAR(64)
+    * **token_family**: UUID
+    * **refresh_token_hash**: VARCHAR(255) <<Unique>>
+    --
+    * **is_revoked**: BOOLEAN <<Default: false>>
+    --
+    * **created_at**: TIMESTAMPTZ
+    * **expires_at**: TIMESTAMPTZ
+}
+
+entity "**user_mfa_methods**" as UserMFAMethods {
+    * **id**: UUID <<PK>>
+    * **user_id**: UUID <<FK>>
+    --
+    * **type**: ENUM ('EMAIL', 'TOTP', 'BACKUP_CODES')
+    * **secret**: TEXT <<Encrypted/Nullable>>
+    * **is_active**: BOOLEAN <<Default: true>>
+    --
+    * **last_used_at**: TIMESTAMPTZ
+    * **created_at**: TIMESTAMPTZ
+}
+
+Users ||-o{ UserIdentities
+UserEmails }o-|| Users
+Users ||--o{ UserSessions
+Users ||--o{ UserMFAMethods
+
+@enduml
