@@ -1,0 +1,46 @@
+@startuml Redis_Auth_Storage
+
+skinparam title {
+    FontSize 18
+}
+
+skinparam object {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+}
+
+title Redis: Auth Service
+
+object "auth:verify:email:otp:{verify_token}" as EmailOTP {
+    -- Key Info --
+    **type** = "Hash"
+    **ttl** = "5 minutes"
+    -- Fields --
+    .. User Identities ..
+    * **user_id**: UUID
+    * **email**: String(320)
+    .. Security Context ..
+    * **user_agent**: TEXT
+    * **fingerprint_hash**: String(64)
+    .. Verification ..
+    * **code_hash**: String(64)
+    * **attempts**: Integer
+}
+
+object "auth:verify:session:{mfa_token}" as MFASession {
+    -- Key Info --
+    type = "Hash"
+    ttl = "5 minutes"
+    -- Fields --
+    .. User Identities ..
+    * **user_id**: UUID
+    .. Security Context ..
+    * **user_agent**: TEXT
+    * **fingerprint_hash**: String(64)
+    .. Flow State ..
+    * **method**: String ('EMAIL', 'TOTP', 'BACKUP_CODES')
+    * **attempts**: Integer
+}
+
+@enduml
