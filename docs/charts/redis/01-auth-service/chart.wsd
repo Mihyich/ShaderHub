@@ -30,8 +30,8 @@ object "auth:verify:email:otp:{verify_token}" as EmailOTP {
 
 object "auth:verify:session:{mfa_token}" as MFASession {
     -- Key Info --
-    type = "Hash"
-    ttl = "5 minutes"
+    **type** = "Hash"
+    **ttl** = "5 minutes"
     -- Fields --
     .. User Identities ..
     * **user_id**: UUID
@@ -41,6 +41,22 @@ object "auth:verify:session:{mfa_token}" as MFASession {
     .. Flow State ..
     * **method**: String ('EMAIL', 'TOTP', 'BACKUP_CODES')
     * **attempts**: Integer
+}
+
+object "auth:cooldown:{type}:{user_id}" as Cooldown {
+    -- Key Info --
+    **type** = "String"
+    **ttl** = "60 seconds"
+    -- Value --
+    **value** = "1" (Trash-flag)
+}
+
+object "auth:lockout:{user_id}" as Lockout {
+    -- Key Info --
+    **type** = "String"
+    **ttl** = "15 minutes"
+    -- Value --
+    **attempts**: Integer
 }
 
 @enduml
