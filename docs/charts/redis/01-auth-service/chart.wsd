@@ -43,20 +43,36 @@ object "auth:verify:session:{mfa_token}" as MFASession {
     * **attempts**: Integer
 }
 
-object "auth:cooldown:{type}:{user_id}" as Cooldown {
+object "auth:limiter:{endpoint}:ip:{ip}" as LimiterIp {
+    -- Key Info --
+    **type** = "String"
+    **ttl** = "600 seconds"
+    -- Value --
+    * **attempts**: Integer
+}
+
+object "auth:limiter:{endpoint}:fp:{fp}" as LimiterFP {
     -- Key Info --
     **type** = "String"
     **ttl** = "60 seconds"
     -- Value --
-    **value** = "1" (Trash-flag)
+    * **attempts**: Integer
 }
 
-object "auth:lockout:{user_id}" as Lockout {
+object "auth:limiter:user:{endpoint}:{user_id/email_hash}" as LimiterUser {
+    -- Key Info --
+    **type** = "String"
+    **ttl** = "60 seconds"
+    -- Value --
+    * **attempts**: Integer
+}
+
+object "auth:lockout:user:{user_id}" as Lockout {
     -- Key Info --
     **type** = "String"
     **ttl** = "15 minutes"
     -- Value --
-    **attempts**: Integer
+    * **attempts**: Integer
 }
 
 @enduml
