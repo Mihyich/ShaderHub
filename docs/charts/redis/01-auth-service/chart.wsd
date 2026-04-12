@@ -26,6 +26,8 @@ object "auth:verify:email:otp:{verify_token}" as EmailOTP {
     .. Verification ..
     * **code_hash**: String(64)
     * **attempts**: Integer
+    .. Timing ..
+    * **created_at**: Unix Timestamp
 }
 
 object "auth:verify:session:{mfa_token}" as MFASession {
@@ -41,6 +43,8 @@ object "auth:verify:session:{mfa_token}" as MFASession {
     .. Flow State ..
     * **method**: String ('EMAIL', 'TOTP', 'BACKUP_CODES')
     * **attempts**: Integer
+    .. Timing ..
+    * **created_at**: Unix Timestamp
 }
 
 object "auth:limiter:{endpoint}:ip:{ip}" as LimiterIp {
@@ -72,7 +76,7 @@ object "auth:lockout:user:{user_id}" as Lockout {
     **type** = "String"
     **ttl** = "15 minutes"
     -- Value --
-    * **attempts**: Integer
+    * **value**: "1" (Trash-flag)
 }
 
 @enduml
